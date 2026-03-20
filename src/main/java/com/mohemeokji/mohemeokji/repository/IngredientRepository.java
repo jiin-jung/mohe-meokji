@@ -10,4 +10,6 @@ import java.util.List;
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
     // 유저 ID로 찾되, 유통기한(ExpiryDate) 기준 오름차순(Asc)으로 정렬!
     List<Ingredient> findByUserIdOrderByExpiryDateAsc(Long userId);
+
+    List<Ingredient> findByUserId(Long userId);
 }

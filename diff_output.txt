@@ -1,0 +1,304 @@
+diff --git a/build.gradle b/build.gradle
+index 51459cb..b4183a5 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -31,12 +31,23 @@ dependencies {
+     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
+     compileOnly 'org.projectlombok:lombok'
+     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+-    runtimeOnly 'com.h2database:h2'
++
++    // 기존 h2
++    // runtimeOnly 'com.h2database:h2'
++    // MySQL 커넥터
++    runtimeOnly 'com.mysql:mysql-connector-j'
++
+     annotationProcessor 'org.projectlombok:lombok'
+     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+     testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
++
++    // Gemini 의존성
++    implementation 'org.springframework.boot:spring-boot-starter-webflux'
++
++    // macOS 네이티브 DNS 리졸버 추가
++    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
+ }
+ 
+ tasks.named('test') {
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/controller/IngredientController.java b/src/main/java/com/mohemeokji/mohemeokji/controller/IngredientController.java
+index f52d372..0cc9421 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/controller/IngredientController.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/controller/IngredientController.java
+@@ -12,25 +12,34 @@ import java.util.List;
+ @RestController
+ @RequiredArgsConstructor
+ @RequestMapping("/api/ingredients")
++@CrossOrigin(origins = "http://localhost:5173") // 프론트엔드 포트 허용
+ public class IngredientController {
++
+     private final IngredientService ingredientService;
+ 
+     @PostMapping("/{userId}")
+-    @Operation(summary = "냉장고 재료 추가", description = "특정 유저의 냉장고에 새로운 식재료를 넣습니다.")
++    @Operation(summary = "냉장고 재료 추가", description = "특정 유저의 냉장고에 식재료를 등록합니다.")
+     public String save(@PathVariable Long userId, @RequestBody IngredientRequest request) {
+-        Long ingredientId = ingredientService.save(
+-                userId,
+-                request.getName(),
+-                request.getQuantity(),
+-                request.getUnit(),
+-                request.getExpiryDate()
+-        );
++        // 서비스의 save(Long userId, IngredientRequest request) 메서드에 맞춰 객체 전달
++        Long ingredientId = ingredientService.save(userId, request);
+         return "식재료 등록 완료! ID: " + ingredientId;
+     }
+ 
+     @GetMapping("/{userId}")
+-    @Operation(summary = "내 냉장고 조회", description = "유통기한이 임박한 순서대로 재료 목록을 가져옵니다.")
++    @Operation(summary = "내 냉장고 조회", description = "유통기한 임박 순으로 재료 목록을 조회합니다.")
+     public List<Ingredient> getMyFridge(@PathVariable Long userId) {
+         return ingredientService.findMyIngredients(userId);
+     }
++
++    @DeleteMapping("/{ingredientId}")
++    @Operation(summary = "재료 삭제", description = "냉장고에서 특정 재료를 제거합니다.")
++    public void delete(@PathVariable Long ingredientId) {
++        ingredientService.delete(ingredientId);
++    }
++
++    @PatchMapping("/{id}/quantity")
++    public void updateQuantity(@PathVariable Long id, @RequestParam Double quantity) {
++        ingredientService.updateQuantity(id, quantity);
++    }
++
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/controller/UserController.java b/src/main/java/com/mohemeokji/mohemeokji/controller/UserController.java
+index 77d33ef..6be2ef5 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/controller/UserController.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/controller/UserController.java
+@@ -12,6 +12,7 @@ import java.util.List;
+ @RestController
+ @RequiredArgsConstructor
+ @RequestMapping("/api/users")
++@CrossOrigin(origins = "http://localhost:5173")
+ public class UserController {
+     private final UserService userService;
+ 
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/domain/Ingredient.java b/src/main/java/com/mohemeokji/mohemeokji/domain/Ingredient.java
+index 885ae7d..c8dd381 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/domain/Ingredient.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/domain/Ingredient.java
+@@ -6,6 +6,7 @@ import lombok.Getter;
+ import lombok.NoArgsConstructor;
+ 
+ import java.time.LocalDate;
++import java.time.LocalDateTime;
+ 
+ @Entity
+ @Getter
+@@ -21,6 +22,9 @@ public class Ingredient {
+     private Double quantity;  // 수량
+     private String unit;      // 단위
+     private LocalDate expiryDate; // 유통기한
++    private String category; // 육류, 채소, 과일, 유제품 등
++
++    private LocalDateTime createdAt;
+ 
+     // 이 재료가 어느 유저의 냉장고에 있는지 연결
+     @ManyToOne(fetch = FetchType.LAZY)
+@@ -28,11 +32,17 @@ public class Ingredient {
+     private User user;
+ 
+     @Builder
+-    public Ingredient(String name, Double quantity, String unit, LocalDate expiryDate, User user) {
++    public Ingredient(String name, Double quantity, String unit, LocalDate expiryDate, String category, User user) {
+         this.name = name;
+         this.quantity = quantity;
+         this.unit = unit;
+         this.expiryDate = expiryDate;
++        this.category = category; // 'this.' 붙어있는지 확인!
+         this.user = user;
++        this.createdAt = LocalDateTime.now();
++    }
++
++    public void updateQuantity(double newQuantity) {
++        this.quantity = newQuantity;
+     }
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/dto/IngredientRequest.java b/src/main/java/com/mohemeokji/mohemeokji/dto/IngredientRequest.java
+index 5f3fe33..ac60d83 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/dto/IngredientRequest.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/dto/IngredientRequest.java
+@@ -1,12 +1,18 @@
+ package com.mohemeokji.mohemeokji.dto;
+ 
++import lombok.AllArgsConstructor;
+ import lombok.Getter;
++import lombok.NoArgsConstructor;
++
+ import java.time.LocalDate;
+ 
+ @Getter
++@NoArgsConstructor
++@AllArgsConstructor
+ public class IngredientRequest {
+-    private String name;           // 재료명
+-    private Double quantity;       // 수량
+-    private String unit;           // 단위
+-    private LocalDate expiryDate;  // 유통기한
++    private String name;
++    private Double quantity;
++    private String unit;
++    private LocalDate expiryDate;
++    private String category;
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/repository/IngredientRepository.java b/src/main/java/com/mohemeokji/mohemeokji/repository/IngredientRepository.java
+index ee5df20..e53fde9 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/repository/IngredientRepository.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/repository/IngredientRepository.java
+@@ -10,4 +10,6 @@ import java.util.List;
+ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
+     // 유저 ID로 찾되, 유통기한(ExpiryDate) 기준 오름차순(Asc)으로 정렬!
+     List<Ingredient> findByUserIdOrderByExpiryDateAsc(Long userId);
++
++    List<Ingredient> findByUserId(Long userId);
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/mohemeokji/mohemeokji/service/IngredientService.java b/src/main/java/com/mohemeokji/mohemeokji/service/IngredientService.java
+index 6c15c2b..d572544 100644
+--- a/src/main/java/com/mohemeokji/mohemeokji/service/IngredientService.java
++++ b/src/main/java/com/mohemeokji/mohemeokji/service/IngredientService.java
+@@ -2,33 +2,35 @@ package com.mohemeokji.mohemeokji.service;
+ 
+ import com.mohemeokji.mohemeokji.domain.Ingredient;
+ import com.mohemeokji.mohemeokji.domain.User;
++import com.mohemeokji.mohemeokji.dto.IngredientRequest;
+ import com.mohemeokji.mohemeokji.repository.IngredientRepository;
+ import com.mohemeokji.mohemeokji.repository.UserRepository;
+-import org.springframework.transaction.annotation.Transactional;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
+ 
+-import java.time.LocalDate;
+ import java.util.List;
+ 
+ @Service
+ @RequiredArgsConstructor
+ public class IngredientService {
++
+     private final IngredientRepository ingredientRepository;
+     private final UserRepository userRepository;
+ 
+     @Transactional
+-    public Long save(Long userId, String name, Double quantity, String unit, LocalDate expiryDate) {
+-        // 1. 재료를 넣을 유저를 먼저 찾고
++    public Long save(Long userId, IngredientRequest request) {
++        // 1. 유저 조회
+         User user = userRepository.findById(userId)
+-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
++                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다. id=" + userId));
+ 
+-        // 2. 재료 엔티티를 생성 (여기서 드디어 생성자가 사용됩니다! ㅋ)
++        // 2. 재료 생성 (Builder 사용)
+         Ingredient ingredient = Ingredient.builder()
+-                .name(name)
+-                .quantity(quantity)
+-                .unit(unit)
+-                .expiryDate(expiryDate)
++                .name(request.getName())
++                .quantity(request.getQuantity())
++                .unit(request.getUnit())
++                .expiryDate(request.getExpiryDate())
++                .category(request.getCategory())
+                 .user(user)
+                 .build();
+ 
+@@ -37,16 +39,29 @@ public class IngredientService {
+ 
+     @Transactional(readOnly = true)
+     public List<Ingredient> findMyIngredients(Long userId) {
+-        // 1. 유저가 있는지 검증하고 (성공하면 ID 반환, 실패하면 예외)
+-        Long validatedUserId = validateExistingUser(userId);
++        // 유저 존재 여부 확인
++        validateExistingUser(userId);
++
++        // 유통기한 순으로 재료 목록 반환
++        return ingredientRepository.findByUserIdOrderByExpiryDateAsc(userId);
++    }
+ 
+-        // 2. 해당 유저의 재료 목록을 유통기한 순으로 반환
+-        return ingredientRepository.findByUserIdOrderByExpiryDateAsc(validatedUserId);
++    private void validateExistingUser(Long userId) {
++        if (!userRepository.existsById(userId)) {
++            throw new IllegalArgumentException("해당 유저가 없습니다. id=" + userId);
++        }
+     }
+ 
+-    private Long validateExistingUser(Long userId) {
+-        userRepository.findById(userId)
+-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+-        return userId;
++    @Transactional
++    public void delete(Long ingredientId) {
++        ingredientRepository.deleteById(ingredientId);
++    }
++
++    @Transactional
++    public void updateQuantity(Long id, Double quantity) {
++        Ingredient ingredient = ingredientRepository.findById(id)
++                .orElseThrow(() -> new IllegalArgumentException("재료 없음"));
++        // 더티 체킹을 통해 수량 변경
++        ingredient.updateQuantity(quantity);
+     }
+ }
+\ No newline at end of file
+diff --git a/src/main/resources/application.yaml b/src/main/resources/application.yaml
+index dd04def..917b2ba 100644
+--- a/src/main/resources/application.yaml
++++ b/src/main/resources/application.yaml
+@@ -1,10 +1,28 @@
+ spring:
+-  h2:
+-    console:
+-      enabled: true
+-      path: /h2-console
+   datasource:
+-    url: jdbc:h2:mem:mohedb;MODE=MySQL
+-    driver-class-name: org.h2.Driver
+-    username: sa
+-    password:
+\ No newline at end of file
++    # MySQL 접속 주소
++    url: ${DB_URL:jdbc:mysql://localhost:3306/mohemeokji?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true}
++    driver-class-name: com.mysql.cj.jdbc.Driver
++    username: ${DB_USERNAME}
++    password: ${DB_PASSWORD}
++
++  jpa:
++    hibernate:
++      # 서버 실행 시 테이블이 없으면 자동으로 생성
++      ddl-auto: update
++    show-sql: true
++    properties:
++      hibernate:
++        format_sql: true
++        dialect: org.hibernate.dialect.MySQLDialect
++
++  gemini:
++    api:
++      key: ${GEMINI_API_KEY}
++      url: "${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent}"
++
++
++  youtube:
++    api:
++      key: ${YOUTUBE_API_KEY}
++      url: ${YOUTUBE_API_URL:https://www.googleapis.com/youtube/v3/search}
+\ No newline at end of file
