@@ -210,7 +210,7 @@ curl -X POST http://localhost:8080/api/recipes/recommend \
 | **AI/ML Engineer** | jiin-jung | AI 모델 통합, 추천 알고리즘 |
 
 ### 연락처
-- **이메일**: [your-email@example.com]
+- **이메일**: [cki08543@gmail.com]
 - **GitHub**: [@jiin-jung](https://github.com/jiin-jung)
 
 ---
