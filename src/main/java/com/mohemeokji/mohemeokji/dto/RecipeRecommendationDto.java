@@ -39,6 +39,7 @@ public class RecipeRecommendationDto {
 
         @NotNull
         @Positive
+        @JsonAlias("quantity")
         private Double quantityPerServing;
 
         @NotBlank

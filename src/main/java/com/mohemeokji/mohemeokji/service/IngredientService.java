@@ -28,6 +28,13 @@ public class IngredientService {
     private final IngredientShelfLifeService ingredientShelfLifeService;
 
     @Transactional
+    public List<Long> saveAll(Long userId, List<IngredientRequest> requests) {
+        return requests.stream()
+                .map(request -> save(userId, request))
+                .toList();
+    }
+
+    @Transactional
     public Long save(Long userId, IngredientRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저가 없습니다. id=" + userId));

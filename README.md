@@ -30,9 +30,9 @@
 | Language | Java 21 |
 | Framework | Spring Boot 4.0.3 |
 | Build Tool | Gradle (Groovy) |
-| Database | MySQL 8.0 |
+| Database | MySQL 8.0 (테스트: H2) |
 | ORM | Spring Data JPA |
-| API Docs | SpringDoc (Swagger UI) |
+| API Docs | SpringDoc OpenAPI 3 (Swagger UI) |
 | AI | Google Gemini API (Vision + Text) |
 | External | YouTube Data API v3 |
 | HTTP Client | Spring WebFlux (WebClient) |
@@ -41,66 +41,76 @@
 
 ## 🏗️ 패키지 구조
 
-도메인 기준 패키징 적용.
-
 ```
 com.mohemeokji.mohemeokji
+├── auth/
+│   ├── CurrentUserProvider.java        # 현재 유저 추상화 인터페이스
+│   └── DevCurrentUserProvider.java     # 개발용 유저 공급자
+│
+├── config/
+│   └── WebClientConfig.java
+│
 ├── domain/
-│   └── imageanalyze/               # 이미지 식재료 분석
-│       ├── controller/
-│       │   ├── ImageAnalyzeController.java
-│       │   └── ImageAnalyzeControllerDocs.java
-│       ├── dto/
-│       │   ├── DetectedIngredientDto.java
-│       │   └── ImageAnalyzeResDto.java
-│       ├── exception/
-│       │   ├── ImageAnalyzeErrorCode.java
-│       │   └── ImageAnalyzeException.java
-│       └── service/
-│           └── ImageAnalyzeService.java
+│   ├── imageanalyze/                   # 이미지 식재료 분석 (도메인 패키지)
+│   │   ├── controller/
+│   │   │   ├── ImageAnalyzeController.java
+│   │   │   └── ImageAnalyzeControllerDocs.java
+│   │   ├── dto/
+│   │   │   ├── DetectedIngredientDto.java
+│   │   │   └── ImageAnalyzeResDto.java
+│   │   ├── exception/
+│   │   │   ├── ImageAnalyzeErrorCode.java
+│   │   │   └── ImageAnalyzeException.java
+│   │   └── service/
+│   │       └── ImageAnalyzeService.java
+│   │
+│   ├── AuthProvider.java               # OAuth2 제공자 Enum
+│   ├── DislikedRecipe.java
+│   ├── HouseholdType.java              # 가구 유형 Enum (SINGLE / MULTI)
+│   ├── Ingredient.java
+│   ├── SavedRecipe.java
+│   ├── SavedRecipeIngredient.java
+│   ├── ShoppingItem.java
+│   ├── User.java
+│   └── UserRole.java                   # 유저 권한 Enum
 │
-├── global/
-│   ├── exception/
-│   │   ├── BaseErrorCode.java      # ErrorCode 인터페이스
-│   │   ├── GlobalErrorCode.java    # 공통 에러 코드 Enum
-│   │   └── GlobalException.java    # 베이스 예외
-│   └── response/
-│       └── ApiResponse.java        # 공통 응답 포맷
-│
-├── controller/                     # 레거시 컨트롤러 (점진적 이전 예정)
+├── controller/
 │   ├── GlobalExceptionHandler.java
 │   ├── IngredientController.java
 │   ├── RecipeController.java
 │   ├── ShoppingListController.java
 │   └── UserController.java
 │
+├── dto/                                # 요청 / 응답 DTO
+│
+├── exception/                          # 비즈니스 예외 계층
+│   ├── BusinessException.java
+│   ├── DuplicateResourceException.java
+│   ├── EntityNotFoundException.java
+│   ├── ExternalServiceException.java
+│   └── InvalidInputException.java
+│
+├── global/
+│   ├── exception/
+│   │   ├── BaseErrorCode.java
+│   │   ├── GlobalErrorCode.java
+│   │   └── GlobalException.java
+│   └── response/
+│       └── ApiResponse.java            # 공통 응답 포맷
+│
+├── repository/
 ├── service/
-│   ├── GeminiService.java          # Gemini 텍스트 API
-│   ├── IngredientService.java
-│   ├── RecipeService.java
-│   ├── ShoppingListService.java
-│   └── UserService.java
-│
-├── domain/                         # JPA 엔티티
-│   ├── Ingredient.java
-│   ├── SavedRecipe.java
-│   ├── SavedRecipeIngredient.java  # 저장 레시피의 재료 단위
-│   ├── ShoppingItem.java
-│   └── User.java
-│
-└── auth/
-    ├── CurrentUserProvider.java
-    └── DevCurrentUserProvider.java
+└── DataInitializer.java
 ```
 
 ### 엔티티 관계
 
 ```
-User ──< Ingredient            (유저의 냉장고 재료)
-User ──< SavedRecipe           (유저가 저장한 레시피)
+User ──< Ingredient                    (유저의 냉장고 재료)
+User ──< SavedRecipe                   (유저가 저장한 레시피)
 SavedRecipe ──< SavedRecipeIngredient  (레시피에 포함된 재료 목록)
-User ──< ShoppingItem          (장보기 목록)
-User ──< DislikedRecipe        (싫어요한 레시피)
+User ──< ShoppingItem                  (장보기 목록)
+User ──< DislikedRecipe                (싫어요한 레시피)
 ```
 
 ---
@@ -114,7 +124,7 @@ User ──< DislikedRecipe        (싫어요한 레시피)
 | POST | `/me` | 냉장고에 재료 추가 |
 | GET | `/me` | 내 냉장고 조회 (유통기한 임박순) |
 | GET | `/me/grouped` | 섹션 구분 그룹 조회 |
-| GET | `/shelf-life` | 재료명 기준 기본 보관일 조회 |
+| GET | `/shelf-life?name=` | 재료명 기준 기본 보관일 조회 |
 | PATCH | `/{id}/quantity` | 재료 수량 수정 |
 | DELETE | `/{ingredientId}` | 재료 삭제 |
 | DELETE | `/expired/me` | 만료 재료 일괄 삭제 |
@@ -123,12 +133,16 @@ User ──< DislikedRecipe        (싫어요한 레시피)
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| GET | `/recommendations` | 냉장고 재료 기반 AI 레시피 추천 |
-| POST | `/save` | 레시피 저장 |
-| GET | `/saved` | 저장한 레시피 목록 조회 |
-| DELETE | `/saved/{id}` | 저장 레시피 삭제 |
+| GET | `/recommendations/me` | 냉장고 재료 기반 AI 레시피 추천 |
+| POST | `/cook/me` | 요리 완료 처리 (재료 재고 자동 차감) |
+| POST | `/saved/me` | 레시피 저장 |
+| GET | `/saved/me` | 저장한 레시피 목록 조회 |
+| DELETE | `/saved/{recipeId}` | 저장 레시피 삭제 |
+| POST | `/dislikes/me` | 레시피 싫어요 추가 |
+| GET | `/dislikes/me` | 싫어요 레시피 목록 조회 |
+| DELETE | `/dislikes/{dislikeId}` | 싫어요 해제 |
 
-### 이미지 분석 `/api/analyze` ✨ NEW
+### 이미지 분석 `/api/analyze`
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
@@ -138,20 +152,21 @@ User ──< DislikedRecipe        (싫어요한 레시피)
 - 최대 크기: 10MB
 - Gemini Vision API로 이미지 분석 후 재료명 / 카테고리 / 예상 수량 반환
 
-### 장보기 목록 `/api/shopping`
+### 장보기 목록 `/api/shopping-list`
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
 | GET | `/me` | 내 장보기 목록 조회 |
-| POST | `/me` | 장보기 항목 추가 |
-| DELETE | `/{id}` | 항목 삭제 |
+| POST | `/from-recipe/me` | 레시피 기반 부족 재료 자동 추가 |
+| DELETE | `/{shoppingItemId}` | 항목 삭제 |
 
 ### 유저 `/api/users`
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
 | POST | `/signup` | 회원가입 |
-| GET | `/me` | 내 정보 조회 |
+| GET | `/me` | 현재 유저 정보 조회 |
+| GET | `/` | 전체 유저 목록 조회 |
 
 ---
 

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +33,13 @@ public class IngredientController {
     public IdResponse save(@Valid @RequestBody IngredientRequest request) {
         Long ingredientId = ingredientService.save(currentUserProvider.getCurrentUserId(), request);
         return new IdResponse(ingredientId);
+    }
+
+    @PostMapping("/me/batch")
+    @Operation(summary = "냉장고 재료 일괄 추가", description = "이미지 분석 결과 등 여러 재료를 한 번에 등록합니다.")
+    public Map<String, Object> saveBatch(@Valid @RequestBody List<IngredientRequest> requests) {
+        List<Long> ids = ingredientService.saveAll(currentUserProvider.getCurrentUserId(), requests);
+        return Map.of("ids", ids, "count", ids.size());
     }
 
     @GetMapping("/me")
