@@ -15,11 +15,13 @@ public class IngredientResponse {
     private Double quantity;
     private String unit;
     private String category;
+    private LocalDate purchaseDate;
     private LocalDate expiryDate;
     private Long dday; // 유통기한까지 남은 일수
+    private ExpiryPolicyDto expiryPolicy;
     private LocalDateTime createdAt;
 
-    public static IngredientResponse from(Ingredient ingredient) {
+    public static IngredientResponse from(Ingredient ingredient, ExpiryPolicyDto expiryPolicy) {
         Long dday = null;
         if (ingredient.getExpiryDate() != null) {
             dday = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), ingredient.getExpiryDate());
@@ -31,8 +33,10 @@ public class IngredientResponse {
                 .quantity(ingredient.getQuantity())
                 .unit(ingredient.getUnit())
                 .category(ingredient.getCategory())
+                .purchaseDate(ingredient.getPurchaseDate())
                 .expiryDate(ingredient.getExpiryDate())
                 .dday(dday)
+                .expiryPolicy(expiryPolicy)
                 .createdAt(ingredient.getCreatedAt())
                 .build();
     }

@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:mohemeokji;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  gemini:
+    api:
+      key: test-gemini-key
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent
+
+  youtube:
+    api:
+      key: test-youtube-key
+      url: https://www.googleapis.com/youtube/v3/search
+
+app:
+  auth:
+    dev-user-id: 2

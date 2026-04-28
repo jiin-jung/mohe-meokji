@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   datasource:
     # MySQL 접속 주소
@@ -8,8 +11,9 @@ spring:
 
   jpa:
     hibernate:
-      # 서버 실행 시 테이블이 없으면 자동으로 생성
-      ddl-auto: update
+      # [개발 전용] 테이블 자동 생성/변경. 프로덕션에서는 반드시 validate 또는 none으로 변경할 것.
+      # 프로덕션 배포 시: spring.profiles.active=prod 또는 환경변수 DDL_AUTO=validate 설정
+      ddl-auto: ${DDL_AUTO:update}
     show-sql: true
     properties:
       hibernate:
@@ -26,3 +30,7 @@ spring:
     api:
       key: ${YOUTUBE_API_KEY}
       url: ${YOUTUBE_API_URL:https://www.googleapis.com/youtube/v3/search}
+
+app:
+  auth:
+    dev-user-id: ${DEV_USER_ID:2}

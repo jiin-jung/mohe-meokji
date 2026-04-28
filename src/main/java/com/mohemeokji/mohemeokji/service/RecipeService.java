@@ -4,13 +4,18 @@ import com.mohemeokji.mohemeokji.domain.SavedRecipe;
 import com.mohemeokji.mohemeokji.domain.SavedRecipeIngredient;
 import com.mohemeokji.mohemeokji.domain.User;
 import com.mohemeokji.mohemeokji.dto.RecipeRecommendationDto;
+import com.mohemeokji.mohemeokji.exception.DuplicateResourceException;
+import com.mohemeokji.mohemeokji.exception.EntityNotFoundException;
+import com.mohemeokji.mohemeokji.exception.InvalidInputException;
 import com.mohemeokji.mohemeokji.repository.SavedRecipeRepository;
 import com.mohemeokji.mohemeokji.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,17 +25,34 @@ public class RecipeService {
 
     private final SavedRecipeRepository savedRecipeRepository;
     private final UserRepository userRepository;
+    private final YouTubeService youtubeService;
+    private final RecipeIngredientPolicyService recipeIngredientPolicyService;
 
     @Transactional
     public Long saveRecipe(Long userId, RecipeRecommendationDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        recipeIngredientPolicyService.normalizeAndValidateRecommendations(List.of(dto));
+
+        String normalizedRecipeName = normalizeRecipeName(dto.getRecipeName());
+        if (!StringUtils.hasText(normalizedRecipeName)) {
+            throw new InvalidInputException("레시피 이름이 올바르지 않습니다.");
+        }
+        if (savedRecipeRepository.existsByUserIdAndNormalizedRecipeName(userId, normalizedRecipeName)) {
+            throw new DuplicateResourceException("이미 저장된 레시피입니다.");
+        }
+
+        String normalizedSearchQuery = youtubeService.buildSearchQuery(dto.getRecipeName(), dto.getYtSearchQuery());
+        String resolvedYoutubeUrl = youtubeService.resolveRecipeVideoUrl(dto.getRecipeName(), normalizedSearchQuery);
 
         SavedRecipe savedRecipe = SavedRecipe.builder()
                 .user(user)
                 .recipeName(dto.getRecipeName())
+                .normalizedRecipeName(normalizedRecipeName)
                 .description(dto.getDescription())
-                .youtubeUrl(dto.getYoutubeUrl())
+                .ytSearchQuery(normalizedSearchQuery)
+                .youtubeUrl(resolvedYoutubeUrl)
                 .category(dto.getCategory())
                 .steps(dto.getSteps())
                 .build();
@@ -71,15 +93,27 @@ public class RecipeService {
                 .id(recipe.getId())
                 .recipeName(recipe.getRecipeName())
                 .description(recipe.getDescription())
+                .ytSearchQuery(recipe.getYtSearchQuery())
                 .youtubeUrl(recipe.getYoutubeUrl())
                 .category(recipe.getCategory())
                 .steps(recipe.getSteps())
                 .ingredients(ingredientDtos)
-                // maxServings는 저장된 데이터에는 없으므로 기본값 0 또는 필요 시 재계산 로직 추가 가능
                 .build();
     }
+
     @Transactional
     public void deleteSavedRecipe(Long recipeId) {
+        if (!savedRecipeRepository.existsById(recipeId)) {
+            throw new EntityNotFoundException("저장된 레시피가 없습니다. id=" + recipeId);
+        }
         savedRecipeRepository.deleteById(recipeId);
+    }
+
+    private String normalizeRecipeName(String recipeName) {
+        if (!StringUtils.hasText(recipeName)) {
+            return null;
+        }
+        return recipeName.replaceAll("\\s+", "")
+                .toLowerCase(Locale.ROOT);
     }
 }

@@ -12,7 +12,13 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "saved_recipes")
+@Table(
+        name = "saved_recipes",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_saved_recipes_user_normalized_name",
+                columnNames = {"user_id", "normalized_recipe_name"}
+        )
+)
 public class SavedRecipe {
 
     @Id
@@ -26,8 +32,13 @@ public class SavedRecipe {
     @Column(nullable = false)
     private String recipeName;
 
+    @Column(name = "normalized_recipe_name", nullable = false, length = 255)
+    private String normalizedRecipeName;
+
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    private String ytSearchQuery;
 
     private String youtubeUrl;
 
@@ -45,10 +56,12 @@ public class SavedRecipe {
     private LocalDateTime createdAt;
 
     @Builder
-    public SavedRecipe(User user, String recipeName, String description, String youtubeUrl, String category, List<String> steps) {
+    public SavedRecipe(User user, String recipeName, String normalizedRecipeName, String description, String ytSearchQuery, String youtubeUrl, String category, List<String> steps) {
         this.user = user;
         this.recipeName = recipeName;
+        this.normalizedRecipeName = normalizedRecipeName;
         this.description = description;
+        this.ytSearchQuery = ytSearchQuery;
         this.youtubeUrl = youtubeUrl;
         this.category = category;
         this.steps = steps != null ? steps : new ArrayList<>();

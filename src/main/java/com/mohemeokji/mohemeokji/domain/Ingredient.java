@@ -21,6 +21,7 @@ public class Ingredient {
     private String name;      // 재료명
     private Double quantity;  // 수량
     private String unit;      // 단위
+    private LocalDate purchaseDate; // 구매일 또는 보관 시작일
     private LocalDate expiryDate; // 유통기한
     private String category; // 육류, 채소, 과일, 유제품 등
 
@@ -32,10 +33,11 @@ public class Ingredient {
     private User user;
 
     @Builder
-    public Ingredient(String name, Double quantity, String unit, LocalDate expiryDate, String category, User user) {
+    public Ingredient(String name, Double quantity, String unit, LocalDate purchaseDate, LocalDate expiryDate, String category, User user) {
         this.name = name;
         this.quantity = quantity;
         this.unit = unit;
+        this.purchaseDate = purchaseDate;
         this.expiryDate = expiryDate;
         this.category = category; // 'this.' 붙어있는지 확인!
         this.user = user;

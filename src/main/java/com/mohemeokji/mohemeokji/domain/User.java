@@ -20,13 +20,26 @@ public class User {
 
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider provider;
+
+    private String providerUserId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
     @Enumerated(EnumType.STRING) // Enum의 문자열(SINGLE, MULTI) 그대로 DB에 저장
     private HouseholdType householdType;
 
     @Builder
-    public User(String email, String nickname, HouseholdType householdType) {
+    public User(String email, String nickname, AuthProvider provider, String providerUserId, UserRole role, HouseholdType householdType) {
         this.email = email;
         this.nickname = nickname;
+        this.provider = provider;
+        this.providerUserId = providerUserId;
+        this.role = role;
         this.householdType = householdType;
     }
 }
