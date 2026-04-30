@@ -16,4 +16,8 @@ public record ApiResponse<T>(
     public static <T> ApiResponse<T> failure(BaseErrorCode errorCode) {
         return new ApiResponse<>(false, errorCode.getCode(), errorCode.getMessage(), null);
     }
+
+    public static <T> ApiResponse<T> failure(BaseErrorCode errorCode, String message) {
+        return new ApiResponse<>(false, errorCode.getCode(), message, null);
+    }
 }

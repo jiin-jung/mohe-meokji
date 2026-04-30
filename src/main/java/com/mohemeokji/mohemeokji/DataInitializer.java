@@ -1,12 +1,12 @@
 package com.mohemeokji.mohemeokji;
 
-import com.mohemeokji.mohemeokji.domain.AuthProvider;
-import com.mohemeokji.mohemeokji.domain.HouseholdType;
-import com.mohemeokji.mohemeokji.domain.Ingredient;
-import com.mohemeokji.mohemeokji.domain.User;
-import com.mohemeokji.mohemeokji.domain.UserRole;
-import com.mohemeokji.mohemeokji.repository.IngredientRepository;
-import com.mohemeokji.mohemeokji.repository.UserRepository;
+import com.mohemeokji.mohemeokji.domain.user.AuthProvider;
+import com.mohemeokji.mohemeokji.domain.user.HouseholdType;
+import com.mohemeokji.mohemeokji.domain.ingredient.Ingredient;
+import com.mohemeokji.mohemeokji.domain.user.User;
+import com.mohemeokji.mohemeokji.domain.user.UserRole;
+import com.mohemeokji.mohemeokji.domain.ingredient.repository.IngredientRepository;
+import com.mohemeokji.mohemeokji.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
