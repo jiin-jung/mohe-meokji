@@ -47,6 +47,10 @@ dependencies {
     // Gemini 의존성
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // Prometheus / Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     // macOS 네이티브 DNS 리졸버 추가
     runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
 }
