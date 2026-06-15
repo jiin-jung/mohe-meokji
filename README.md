@@ -7,14 +7,6 @@
 
 <br/>
 
-<div align="center">
-  <a href="#">홈페이지</a>
-    |  
-  <a href="http://localhost:8080/swagger-ui/index.html">Swagger</a>
-    |  
-  <a href="#">Figma</a>
-</div>
-
 ---
 
 ## ✍️ 프로젝트 개요
