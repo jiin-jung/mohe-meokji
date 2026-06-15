@@ -1,89 +1,181 @@
 # 🍽️ 모해먹지 (Mohe Meokji)
 
-**냉장고 속 재료로 오늘 식사를 해결하는 AI 스마트 가이드**
+<div align="center">
+  <h1>모해먹지 - 냉장고 속 재료로 식사를 해결하는 AI 가이드</h1>
+  <p>🤖 AI 기반 맞춤형 레시피 추천 및 냉장고 관리 서비스 🤖</p>
+</div>
 
-![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-green?style=flat-square)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square)
-![Gradle](https://img.shields.io/badge/Gradle-Groovy-lightblue?style=flat-square)
+<br/>
+
+<div align="center">
+  <a href="#">홈페이지</a>
+    |  
+  <a href="http://localhost:8080/swagger-ui/index.html">Swagger</a>
+    |  
+  <a href="#">Figma</a>
+</div>
 
 ---
 
-## 📑 목차
+## ✍️ 프로젝트 개요
 
-- [✨ 주요 기능](#-주요-기능)
-- [⚡ 빠른 시작](#-빠른-시작)
-- [🛠️ 기술 스택](#-기술-스택)
-- [🏗️ 프로젝트 구조](#-프로젝트-구조)
-- [📡 API 문서](#-api-문서)
-- [🔐 환경 설정](#-환경-설정)
-- [📚 개발 가이드](#-개발-가이드)
-- [🚀 배포](#-배포)
-- [👤 개발자 정보](#-개발자-정보)
+- **프로젝트명:** 모해먹지 (Mohe Meokji)
+- **프로젝트 기간:** 2025-09-01 ~ 2026-04-30
+- **프로젝트 형태:** WEB 서비스
+- **서비스 상태:** 개발 중
+- **목표:** Google Gemini AI를 활용하여 냉장고 재료 기반 레시피 추천 및 스마트 냉장고 관리 서비스 구축
+- **주요 타겟 사용자:**
+  - 냉장고 속 재료로 만들 수 있는 요리를 찾는 사용자
+  - 식재료의 유통기한을 효과적으로 관리하고 싶은 사용자
+  - AI 기반 스마트한 장보기 리스트를 원하는 사용자
+
+---
+
+## ✍️ 프로젝트 소개
+
+### 프로젝트 배경
+
+현대인들은 냉장고에 있는 재료가 무엇인지 기억하지 못하거나, 어떤 요리를 만들 수 있는지 알지 못해 음식물 낭비가 발생합니다. 또한 유통기한이 임박한 재료를 관리하기가 어렵고, 요리할 때 부족한 재료를 일일이 확인해야 합니다.
+
+모해먹지는 이러한 문제를 해결하기 위해 냉장고 재료를 체계적으로 관리하고, Google Gemini AI를 활용하여 보유한 재료로 만들 수 있는 레시피를 추천합니다. 또한 이미지 인식을 통해 식재료를 자동으로 감지하고, 레시피 기반 스마트 장보기 기능을 제공합니다.
+
+### 사용자 니즈
+
+🍳 **냉장고 관리**
+
+- 냉장고 속 재료를 한곳에서 관리하고 싶음
+- 유통기한 임박 재료를 빠르게 파악하고 싶음
+- 사진만 찍어도 자동으로 재료를 추가하고 싶음
+
+🤖 **AI 레시피 추천**
+
+- 보유한 재료로 만들 수 있는 요리를 빠르게 알고 싶음
+- 마음에 드는 레시피를 저장하고 싶음
+- 싫어하는 음식을 제외하고 추천받고 싶음
+
+🛒 **스마트 장보기**
+
+- 장보기 목록을 효율적으로 관리하고 싶음
+- 레시피에 필요한 부족 재료를 자동으로 추가하고 싶음
+
+---
+
+## 🚀 프로젝트 목표
+
+1. **AI를 활용한 간편한 냉장고 재료 관리 및 맞춤형 레시피 추천**
+
+2. **이미지 인식을 통한 자동 식재료 감지 및 등록**
+
+3. **유통기한 기반 스마트 냉장고 관리 시스템 구축**
+
+4. **레시피 기반 효율적인 장보기 시스템 제공**
 
 ---
 
 ## ✨ 주요 기능
 
-| 기능 | 설명 |
-|------|------|
-| 🤖 **AI 레시피 추천** | 냉장고 재료로 만들 수 있는 레시피를 Google Gemini AI가 추천 |
-| 🖼️ **이미지 식재료 인식** | 사진만 업로드해도 Gemini Vision으로 자동 감지 |
-| 📦 **냉장고 관리** | 유통기한 관리, 재료 재고 추적 |
-| 💾 **레시피 저장** | 마음에 드는 레시피 저장 및 싫어요 설정 |
-| 🛒 **스마트 장보기** | 레시피 기반 부족한 재료 자동 추가 |
+### 1. AI 기반 레시피 추천
+
+- 냉장고 내 재료를 기반으로 Google Gemini AI가 요리 가능한 레시피 추천
+- 권장 식재료, 조리 방법, 소요 시간 등 상세 정보 제공
+- 추천 레시피 저장 및 싫어요 기능으로 개인화된 추천
+
+<br/>
+
+### 2. 이미지 기반 식재료 인식
+
+- 냉장고 재료 사진을 업로드하면 Google Gemini Vision으로 자동 감지
+- 감지된 재료의 이름, 카테고리, 예상 수량 자동 추출
+- 한 번의 클릭으로 냉장고에 재료 등록
+
+<br/>
+
+### 3. 스마트 냉장고 관리
+
+- 보유한 모든 재료를 카테고리별로 조회
+- 유통기한 임박순으로 정렬된 재료 목록
+- 재료 수량 수정 및 삭제 기능
+- 만료된 재료 일괄 삭제
+
+<br/>
+
+### 4. 레시피 저장 및 관리
+
+- 마음에 드는 레시피 저장 및 조회
+- 레시피 싫어요 설정으로 개인화된 추천
+- 요리 완료 처리 시 재료 자동 차감
+
+<br/>
+
+### 5. 스마트 장보기 목록
+
+- 레시피 기반 부족 재료 자동 추가
+- 개인 장보기 목록 관리 및 삭제
+- 효율적인 장본 계획 수립
+
+<br/>
+
+### 6. 회원 관리
+
+- 회원가입 및 로그인
+- 현재 유저 정보 조회
 
 ---
 
-## ⚡ 빠른 시작
+## 🧑‍💻 팀원 소개
 
-### 필수 요구사항
-
-- **Java 21** 이상
-- **MySQL 8.0** 이상 (또는 H2 for 테스트)
-- **Gemini API Key** ([구하기](https://aistudio.google.com/))
-- **YouTube Data API Key** ([구하기](https://developers.google.com/youtube/))
-
-### 설치 및 실행
-
-```bash
-# 저장소 클론
-git clone https://github.com/jiin-jung/mohe-meokji.git
-cd mohe-meokji
-
-# 환경 변수 설정 (.env 또는 application.yml)
-export DB_URL=jdbc:mysql://localhost:3306/mohemeokji
-export DB_USERNAME=root
-export DB_PASSWORD=your_password
-export GEMINI_API_KEY=your_gemini_key
-export YOUTUBE_API_KEY=your_youtube_key
-
-# 의존성 설치 및 빌드
-./gradlew build
-
-# 서버 실행
-./gradlew bootRun
-
-# Swagger UI 접속
-# http://localhost:8080/swagger-ui/index.html
-```
+| **이름** | **역할** | **담당 업무** |
+|:--------:|:--------:|:-------------|
+| <a href="https://github.com/jiin-jung"><img src="https://github.com/jiin-jung.png" width="70px"/><br/><sub><b>나현지</b></sub></a> | FE | 프론트엔드 구현, UI/UX 설계 및 API 연동 |
 
 ---
 
-## 🛠️ 기술 스택
+## ⚙️ 기술 스택
 
-| 분류 | 기술 | 버전 |
-|------|------|------|
-| **Language** | Java | 21 |
-| **Framework** | Spring Boot | 4.0.3 |
-| **Build Tool** | Gradle (Groovy) | - |
-| **Database** | MySQL | 8.0 |
-| **ORM** | Spring Data JPA | - |
-| **API Documentation** | SpringDoc OpenAPI | 3 |
-| **AI/Vision** | Google Gemini API | Vision + Text |
-| **External APIs** | YouTube Data API | v3 |
-| **HTTP Client** | Spring WebFlux (WebClient) | - |
-| **Testing** | JUnit 5, Mockito | - |
+<table>
+  <thead>
+    <tr>
+      <th>분류</th>
+      <th>기술 스택</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Backend</td>
+      <td>
+        <img src="https://img.shields.io/badge/Java_21-007396?style=flat&logo=openjdk&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat&logo=springboot&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat&logo=spring&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Database</td>
+      <td>
+        <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td>AI & External API</td>
+      <td>
+        <img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=flat&logo=google&logoColor=white"/>
+        <img src="https://img.shields.io/badge/YouTube_API-FF0000?style=flat&logo=youtube&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Build & Testing</td>
+      <td>
+        <img src="https://img.shields.io/badge/Gradle-02303A?style=flat&logo=gradle&logoColor=white"/>
+        <img src="https://img.shields.io/badge/JUnit5-25A162?style=flat&logo=junit5&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Documentation</td>
+      <td>
+        <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=swagger&logoColor=black"/>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
@@ -216,7 +308,7 @@ User (사용자)
 |--------|----------|------|------|
 | **POST** | `/signup` | 회원가입 | ❌ |
 | **GET** | `/me` | 현재 유저 정보 조회 | ✅ |
-| **GET** | `/` | 전체 유저 목록 조회 | ✅ |
+| **GET** | `/` | 전체 유저 목록 ��회 | ✅ |
 
 ---
 
@@ -314,24 +406,45 @@ youtube:
 
 ## 📚 개발 가이드
 
+### 필수 요구사항
+
+- **Java 21** 이상
+- **MySQL 8.0** 이상 (또는 H2 for 테스트)
+- **Gemini API Key** ([구하기](https://aistudio.google.com/))
+- **YouTube Data API Key** ([구하기](https://developers.google.com/youtube/))
+
 ### 로컬 개발 환경 설정
 
 ```bash
-# 1. MySQL 설치 및 데이터베이스 생성
+# 1. 저장소 클론
+git clone https://github.com/jiin-jung/mohe-meokji.git
+cd mohe-meokji
+
+# 2. MySQL 데이터베이스 생성
 mysql -u root -p
 CREATE DATABASE mohemeokji CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-# 2. Java 21 설치 확인
+# 3. Java 21 설치 확인
 java -version
 
-# 3. IDE에 프로젝트 임포트 (IntelliJ IDEA 추천)
+# 4. 환경 변수 설정 (.env 또는 application.yml)
+export DB_URL=jdbc:mysql://localhost:3306/mohemeokji
+export DB_USERNAME=root
+export DB_PASSWORD=your_password
+export GEMINI_API_KEY=your_gemini_key
+export YOUTUBE_API_KEY=your_youtube_key
+
+# 5. IDE에 프로젝트 임포트 (IntelliJ IDEA 추천)
 # File -> Open -> mohe-meokji 폴더 선택
 
-# 4. 의존성 다운로드
+# 6. 의존성 설치 및 빌드
 ./gradlew clean build
 
-# 5. 개발 서버 실행
+# 7. 개발 서버 실행
 ./gradlew bootRun
+
+# 8. Swagger UI 접속
+# http://localhost:8080/swagger-ui/index.html
 ```
 
 ### 코드 스타일
@@ -394,6 +507,8 @@ docker run -e DB_URL=... -e GEMINI_API_KEY=... -p 8080:8080 mohe-meokji
 ## 📊 프로젝트 통계
 
 - **언어**: Java
+- **프레임워크**: Spring Boot 4.0.3
+- **데이터베이스**: MySQL 8.0
 - **라인 수**: ~5,000 LOC
 - **API 엔드포인트**: 20+
 - **데이터베이스 테이블**: 8개
@@ -414,4 +529,11 @@ docker run -e DB_URL=... -e GEMINI_API_KEY=... -p 8080:8080 mohe-meokji
 
 ---
 
-**마지막 업데이트**: 2026-04-30
+<div align="center">
+  <h3>🍽️ <strong>오늘도 모두 맛있게 해결하자!</strong> 🍽️</h3>
+  <p>모해먹지는 AI를 통해 더 쉽고 편한 냉장고 관리 및 요리 경험을 제공합니다.</p>
+</div>
+
+---
+
+**마지막 업데이트**: 2026-06-15
